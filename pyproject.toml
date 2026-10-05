@@ -1,0 +1,72 @@
+[project]
+name = "rag-slm-service"
+version = "0.1.0"
+description = "Retrieval service for grounded multilingual question answering"
+requires-python = ">=3.12,<3.13"
+
+dependencies = [
+  # Web layer
+  "fastapi",
+  "uvicorn[standard]",
+  "pydantic>=2",
+  "pydantic-settings",
+
+  # Database
+  "sqlalchemy>=2",
+  "psycopg[binary,pool]",
+  "pgvector",
+  "alembic",
+
+  # Text processing
+  "ftfy",
+  "syntok",
+  "langdetect",
+
+  # Utilities
+  "structlog",
+  "httpx",
+  "tenacity",
+  "typer",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-asyncio",
+  "pytest-cov",
+  "ruff",
+  "mypy",
+  "pytest",
+  "pytest-asyncio",
+  "pytest-cov",
+  "ruff",
+  "mypy",
+  "pip-tools",
+  "pre-commit",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+# ---------------------------------------------------------------- tooling
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-q"
