@@ -12,7 +12,7 @@ dependencies = [
   "pydantic-settings",
 
   # Database
-  "sqlalchemy>=2",
+  "sqlalchemy[asyncio]>=2",
   "psycopg[binary,pool]",
   "pgvector",
   "alembic",
