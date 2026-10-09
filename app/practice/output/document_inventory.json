@@ -1,0 +1,28 @@
+{
+  "document_count": 3,
+  "failure_count": 0,
+  "documents": [
+    {
+      "filename": "fees_en.txt",
+      "title": "Second-Term Fee Notice",
+      "language": "en",
+      "word_count": 21,
+      "character_count": 146
+    },
+    {
+      "filename": "holiday_hi.txt",
+      "title": "अवकाश सूचना",
+      "language": "hi",
+      "word_count": 13,
+      "character_count": 80
+    },
+    {
+      "filename": "timings_en.txt",
+      "title": "School Timings",
+      "language": "en",
+      "word_count": 20,
+      "character_count": 120
+    }
+  ],
+  "failures": []
+}

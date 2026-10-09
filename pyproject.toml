@@ -21,7 +21,8 @@ dependencies = [
   "ftfy",
   "syntok",
   "langdetect",
-
+   "sentence-transformers",
+  "numpy",
   # Utilities
   "structlog",
   "httpx",
