@@ -1,0 +1,1 @@
+"""Scoped database search implementations."""
