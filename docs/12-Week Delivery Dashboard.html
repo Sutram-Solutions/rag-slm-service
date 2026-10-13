@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>12-Week Delivery Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF0F4;
+  --paper:#FFFFFF;
+  --ink:#16202E;
+  --ink-2:#4B5868;
+  --ink-3:#8793A3;
+  --line:#D6DCE4;
+  --indigo:#2E3A8C;
+  --indigo-soft:#E4E7F6;
+  --amber:#B06A06;
+  --amber-soft:#FAEEDB;
+  --teal:#0D6E6D;
+  --teal-soft:#DCEFEE;
+  --rose:#A82A44;
+  --rose-soft:#F8E3E7;
+  --shadow:0 1px 2px rgba(22,32,46,.06),0 8px 24px -12px rgba(22,32,46,.18);
+  --sans:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --display:"Space Grotesk","IBM Plex Sans",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#10161F;--paper:#18212C;--ink:#E7ECF2;--ink-2:#A3AFBF;--ink-3:#6C7A8B;
+    --line:#2A3542;--indigo:#9AA6F0;--indigo-soft:#232C50;--amber:#E0A044;
+    --amber-soft:#35291A;--teal:#4FBDB8;--teal-soft:#15302F;--rose:#E2788C;
+    --rose-soft:#361C23;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10161F;--paper:#18212C;--ink:#E7ECF2;--ink-2:#A3AFBF;--ink-3:#6C7A8B;
+  --line:#2A3542;--indigo:#9AA6F0;--indigo-soft:#232C50;--amber:#E0A044;
+  --amber-soft:#35291A;--teal:#4FBDB8;--teal-soft:#15302F;--rose:#E2788C;
+  --rose-soft:#361C23;--shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(72px + env(safe-area-inset-top,0px))}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:-.02em;margin:0}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* ---------- top bar ---------- */
+.bar{
+  position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line);
+  padding-top:env(safe-area-inset-top,0px);
+}
+.bar-in{display:flex;align-items:center;gap:20px;height:60px}
+.mark{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:-.02em;white-space:nowrap}
+.mark span{color:var(--indigo)}
+.navlinks{display:flex;gap:18px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.navlinks::-webkit-scrollbar{display:none}
+.navlinks a{
+  color:var(--ink-2);text-decoration:none;font-size:13.5px;font-weight:500;
+  white-space:nowrap;padding:4px 0;border-bottom:2px solid transparent;
+}
+.navlinks a:hover,.navlinks a:focus-visible{color:var(--ink);border-bottom-color:var(--indigo)}
+.themebtn{
+  background:none;border:1px solid var(--line);border-radius:999px;color:var(--ink-2);
+  width:32px;height:32px;display:grid;place-items:center;flex-shrink:0;
+}
+.themebtn:hover{color:var(--ink);border-color:var(--ink-3)}
+
+/* ---------- hero ---------- */
+.hero{padding:44px 0 8px}
+.kicker{font-size:13px;color:var(--ink-2);margin:0 0 10px;font-weight:500}
+.hero h1{font-size:clamp(30px,5vw,46px);line-height:1.06;max-width:17ch}
+.hero p.lede{max-width:62ch;color:var(--ink-2);margin:14px 0 0;font-size:16px}
+
+/* ---------- counters ---------- */
+.counters{display:flex;flex-wrap:wrap;gap:28px;margin:26px 0 0;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.counter .n{font-family:var(--mono);font-size:26px;font-weight:500;line-height:1;display:block}
+.counter .l{font-size:12.5px;color:var(--ink-2);margin-top:5px;display:block}
+.counter.warn .n{color:var(--amber)}
+
+/* ---------- sections ---------- */
+section{padding:52px 0}
+.sechead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.sechead h2{font-size:23px}
+.sechead .note{font-size:13.5px;color:var(--ink-2)}
+.secsub{color:var(--ink-2);max-width:66ch;margin:0 0 24px;font-size:14.5px}
+
+/* ---------- sprint ribbon ---------- */
+.ribbon-scroll{overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.ribbon{display:grid;grid-template-columns:repeat(6,minmax(168px,1fr));gap:10px;min-width:720px}
+.sprint{
+  text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:3px;
+  padding:14px;display:flex;flex-direction:column;gap:7px;position:relative;
+  border-top:3px solid var(--line);transition:border-color .12s,transform .12s;
+}
+.sprint:hover{border-color:var(--ink-3)}
+.sprint[aria-expanded="true"]{border-top-color:var(--indigo);border-color:var(--indigo)}
+.sprint .sid{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.sprint .sname{font-family:var(--display);font-weight:500;font-size:14.5px;line-height:1.25}
+.sprint .sweeks{font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+.sprint .sphase{font-size:11.5px;color:var(--ink-2);margin-top:auto;padding-top:6px;border-top:1px dashed var(--line)}
+.sprint.now::after{
+  content:"current";position:absolute;top:-3px;right:10px;background:var(--indigo);
+  color:#fff;font-size:10px;padding:1px 6px;border-radius:0 0 3px 3px;letter-spacing:.02em;
+}
+:root[data-theme="dark"] .sprint.now::after,
+@media (prefers-color-scheme:dark){.sprint.now::after{color:#10161F}}
+
+.sprintpanel{
+  margin-top:14px;background:var(--paper);border:1px solid var(--indigo);
+  border-radius:3px;padding:22px;
+}
+.sprintpanel h3{font-size:18px;margin-bottom:4px}
+.sprintpanel .mile{color:var(--indigo);font-weight:600;font-size:14px;margin:0 0 16px}
+.deliv{display:grid;gap:9px;margin:0;padding:0;list-style:none}
+.deliv li{display:flex;gap:10px;font-size:14px;align-items:flex-start}
+.deliv li::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--indigo);margin-top:8px;flex-shrink:0}
+.exit{margin-top:18px;padding:13px 15px;background:var(--teal-soft);border-left:3px solid var(--teal);font-size:13.5px}
+.exit strong{color:var(--teal)}
+
+/* ---------- workstreams ---------- */
+.ws-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:12px}
+.ws{
+  background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--c);
+  border-radius:3px;padding:16px;text-align:left;transition:box-shadow .12s;
+}
+.ws:hover{box-shadow:var(--shadow)}
+.ws[aria-pressed="true"]{box-shadow:var(--shadow);border-color:var(--c)}
+.ws .wid{font-family:var(--mono);font-size:11.5px;color:var(--c);font-weight:500}
+.ws h3{font-size:16px;margin:4px 0 7px}
+.ws p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.45}
+.ws .count{margin-top:11px;font-size:12px;color:var(--ink-3);font-family:var(--mono)}
+
+/* ---------- team ---------- */
+.filters{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
+.chip{
+  background:var(--paper);border:1px solid var(--line);border-radius:999px;
+  padding:5px 13px;font-size:13px;color:var(--ink-2);transition:.12s;
+}
+.chip:hover{border-color:var(--ink-3);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.team{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:9px}
+.person{
+  background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:12px 14px;
+  display:flex;flex-direction:column;gap:3px;
+}
+.person.hide{display:none}
+.person .pn{font-weight:600;font-size:14px}
+.person .pr{font-size:12.5px;color:var(--ink-2);line-height:1.35}
+.person .pw{font-size:11px;font-family:var(--mono);color:var(--c);margin-top:4px}
+.person.lead{border-left:3px solid var(--c)}
+.person .leadtag{font-size:10px;background:var(--c);color:var(--paper);padding:1px 5px;border-radius:2px;align-self:flex-start;margin-top:4px}
+
+/* ---------- risks ---------- */
+.riskgrid{display:grid;gap:7px}
+.risk{
+  display:grid;grid-template-columns:34px 1fr auto;gap:13px;align-items:start;
+  background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:13px 15px;
+}
+.risk .rid{font-family:var(--mono);font-size:12.5px;color:var(--ink-3);padding-top:1px}
+.risk .rt{font-weight:600;font-size:14px}
+.risk .rm{font-size:13px;color:var(--ink-2);margin-top:3px;line-height:1.45}
+.sev{font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:2px;white-space:nowrap;font-weight:500}
+.sev.high{background:var(--rose-soft);color:var(--rose)}
+.sev.med{background:var(--amber-soft);color:var(--amber)}
+.sev.low{background:var(--teal-soft);color:var(--teal)}
+.risk.top{border-left:3px solid var(--rose)}
+
+/* ---------- checklist ---------- */
+.checks{display:grid;gap:7px;margin-bottom:10px}
+.check{
+  display:flex;gap:12px;align-items:flex-start;background:var(--paper);
+  border:1px solid var(--line);border-radius:3px;padding:13px 15px;cursor:pointer;
+  transition:.12s;text-align:left;width:100%;
+}
+.check:hover{border-color:var(--ink-3)}
+.check .box{
+  width:19px;height:19px;border:1.5px solid var(--ink-3);border-radius:2px;flex-shrink:0;
+  margin-top:1px;display:grid;place-items:center;transition:.12s;
+}
+.check[aria-pressed="true"] .box{background:var(--teal);border-color:var(--teal)}
+.check[aria-pressed="true"] .box::after{content:"";width:5px;height:9px;border:solid var(--paper);border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.check[aria-pressed="true"] .ct{color:var(--ink-3);text-decoration:line-through}
+.check .ct{font-size:14px;font-weight:500}
+.check .cm{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.check .cw{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-left:auto;padding-left:12px;white-space:nowrap}
+.check.critical{border-left:3px solid var(--amber)}
+.progress{display:flex;align-items:center;gap:12px;margin-bottom:16px;font-size:13px;color:var(--ink-2)}
+.pbar{flex:1;height:5px;background:var(--line);border-radius:999px;overflow:hidden;max-width:260px}
+.pfill{height:100%;background:var(--teal);width:0;transition:width .3s}
+
+/* ---------- kpi ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px}
+.kpi{background:var(--paper);border:1px solid var(--line);border-radius:3px;padding:15px}
+.kpi .kv{font-family:var(--mono);font-size:23px;font-weight:500;color:var(--indigo);line-height:1.1}
+.kpi .kl{font-size:13px;margin-top:6px;font-weight:500}
+.kpi .kn{font-size:12px;color:var(--ink-2);margin-top:3px}
+.kpi.money .kv{color:var(--teal)}
+
+/* ---------- callout ---------- */
+.callout{
+  background:var(--amber-soft);border:1px solid color-mix(in srgb,var(--amber) 30%,transparent);
+  border-left:4px solid var(--amber);border-radius:3px;padding:20px 22px;margin:26px 0 0;
+}
+.callout h3{font-size:16px;margin-bottom:7px;color:var(--amber)}
+.callout p{margin:0 0 9px;font-size:14px;max-width:70ch}
+.callout p:last-child{margin-bottom:0}
+
+footer{border-top:1px solid var(--line);padding:26px 0 44px;color:var(--ink-3);font-size:12.5px}
+
+@media (max-width:640px){
+  .hero{padding:30px 0 4px}
+  section{padding:38px 0}
+  .counters{gap:20px}
+  .risk{grid-template-columns:1fr;gap:6px}
+  .risk .rid{display:none}
+  .check .cw{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="wrap bar-in">
+    <div class="mark">12-Week Plan <span>/ consolidation &amp; monetisation</span></div>
+    <nav class="navlinks">
+      <a href="#sprints">Sprints</a>
+      <a href="#workstreams">Workstreams</a>
+      <a href="#team">Team</a>
+      <a href="#risks">Risks</a>
+      <a href="#week1">Week 1</a>
+      <a href="#kpis">Targets</a>
+    </nav>
+    <button class="themebtn" id="theme" aria-label="Switch colour theme">◐</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<header class="hero">
+  <p class="kicker">Persona app · School ERP · Attendance suite</p>
+  <h1>Three products, one sellable thing, twelve weeks.</h1>
+  <p class="lede">The engineering is tractable. What is not yet established is whether a business owner will pay — which makes pricing and five pilot customers the two most urgent items on this page.</p>
+
+  <div class="counters">
+    <div class="counter"><span class="n">12</span><span class="l">weeks</span></div>
+    <div class="counter"><span class="n">6</span><span class="l">sprints</span></div>
+    <div class="counter"><span class="n">4</span><span class="l">workstreams</span></div>
+    <div class="counter"><span class="n">17</span><span class="l">people</span></div>
+    <div class="counter"><span class="n">192</span><span class="l">AI responses to generate</span></div>
+    <div class="counter"><span class="n">500+</span><span class="l">users already live</span></div>
+    <div class="counter warn"><span class="n">₹0</span><span class="l">revenue from this segment</span></div>
+  </div>
+</header>
+
+<section id="sprints">
+  <div class="sechead">
+    <h2>Sprint timeline</h2>
+    <span class="note">Select a sprint for its deliverables and exit criteria</span>
+  </div>
+  <p class="secsub">Two-week sprints. Feature freeze lands at the end of Sprint 4, leaving two full sprints for hardening and launch — the part teams cut when they fall behind, and the part that turns a demo into a product.</p>
+
+  <div class="ribbon-scroll">
+    <div class="ribbon" id="ribbon"></div>
+  </div>
+  <div id="sprintpanel"></div>
+</section>
+
+<section id="workstreams">
+  <div class="sechead">
+    <h2>Workstreams</h2>
+    <span class="note">Select one to filter the roster below</span>
+  </div>
+  <p class="secsub">Four streams, each with a single accountable lead. Three of them improve a product that currently earns nothing from business owners; only the fourth produces revenue.</p>
+  <div class="ws-grid" id="wsgrid"></div>
+</section>
+
+<section id="team">
+  <div class="sechead">
+    <h2>Who is doing what</h2>
+    <span class="note">17 people, four streams</span>
+  </div>
+  <p class="secsub">This roster is larger than the remaining scope requires. Surplus capacity goes to reviewing the 192 AI responses, mining feedback from the 500 live users, and automating regression across three production systems — not to new features.</p>
+  <div class="filters" id="filters"></div>
+  <div class="team" id="team"></div>
+</section>
+
+<section id="risks">
+  <div class="sechead">
+    <h2>Risk register</h2>
+    <span class="note">Ranked by probability × impact</span>
+  </div>
+  <p class="secsub">The register has inverted since the first draft. The top two risks are no longer technical, and neither can be solved by the engineering team.</p>
+  <div class="riskgrid" id="risks"></div>
+</section>
+
+<section id="week1">
+  <div class="sechead">
+    <h2>Week one</h2>
+    <span class="note">Your progress saves in this browser</span>
+  </div>
+  <p class="secsub">Items marked in amber are blockers — each one idles a workstream until it is resolved, and none of them is an engineering task.</p>
+  <div class="progress">
+    <span id="ptext">0 of 11 done</span>
+    <div class="pbar"><div class="pfill" id="pfill"></div></div>
+    <button class="chip" id="reset" style="margin-left:auto">Clear all</button>
+  </div>
+  <div class="checks" id="checks"></div>
+
+  <div class="callout">
+    <h3>The two that matter more than the other nine combined</h3>
+    <p><strong>Run the pricing workshop and leave with a number.</strong> The commercial workstream cannot start without it, and it is the only stream that produces revenue.</p>
+    <p><strong>Find five business owners willing to pilot a paid plan.</strong> Twelve weeks of good execution against an unvalidated price is how this quarter fails — and you would only discover it in week twelve.</p>
+  </div>
+</section>
+
+<section id="kpis">
+  <div class="sechead">
+    <h2>What success looks like at week 12</h2>
+  </div>
+  <p class="secsub">Commercial targets first, deliberately. The product and technical numbers are how you get there; they are not the point.</p>
+  <div class="kpis" id="kpis"></div>
+</section>
+
+<footer>
+  Delivery dashboard · generated from the revised 12-week plan · progress stored locally in this browser only
+</footer>
+
+</div>
+
+<script>
+const WS = [
+  { id:"WS1", key:"ws1", name:"Business Owner Suite", color:"#2E3A8C", dark:"#9AA6F0",
+    desc:"Port attendance, tasks and leave from the standalone app into the persona app. Same stack, already multi-tenant, original developers available." },
+  { id:"WS2", key:"ws2", name:"AI Middleware", color:"#0D6E6D", dark:"#4FBDB8",
+    desc:"Move prompts out of the client into Java. Pre-generate all 192 responses, review them by hand, serve from the database." },
+  { id:"WS3", key:"ws3", name:"ERP Analytics", color:"#7A4FA3", dark:"#C09BE0",
+    desc:"Build the remaining 40% of APIs against the existing mock contracts, then swap the Angular dashboard from mock to real data." },
+  { id:"WS4", key:"ws4", name:"Commercial", color:"#B06A06", dark:"#E0A044",
+    desc:"Pricing, subscriptions, payments, trial and conversion. The only workstream that produces revenue." }
+];
+
+const TEAM = [
+  {n:"Prajwal Kharvi",r:"Full stack — owns the attendance port",w:"ws1",lead:true},
+  {n:"Ratnanjaneyulu Kummara",r:"Backend — attendance, GPS check-in",w:"ws1"},
+  {n:"Gautam Govind",r:"Backend — tasks, leave workflow",w:"ws1"},
+  {n:"Rohan Pisal",r:"Flutter — attendance and task screens",w:"ws1"},
+  {n:"Astha",r:"Flutter — leave screens, business dashboard",w:"ws1"},
+  {n:"Sradhanjali Mahapatra",r:"QA — dedicated to this stream",w:"ws1"},
+  {n:"Jothikabu",r:"Generation pipeline, prompt templates",w:"ws2",lead:true},
+  {n:"Saniya",r:"Generation job, admin review tooling",w:"ws2"},
+  {n:"Triveni Karna",r:"Backend — serving API, schema, caching",w:"ws2"},
+  {n:"Urvashi Sutariya",r:"Flutter — mobile integration, offline bundle (50%)",w:"ws2"},
+  {n:"Saroj Kumar",r:"API gap analysis, remaining endpoints",w:"ws3",lead:true},
+  {n:"Thanushareddy",r:"Aggregation jobs, query optimisation",w:"ws3"},
+  {n:"Nityam Arora",r:"Angular — mock to real integration",w:"ws3"},
+  {n:"Sri Varsha",r:"QA — analytics correctness, ERP regression",w:"ws3"},
+  {n:"Kaushik Joshi",r:"Subscriptions, payments, entitlements",w:"ws4",lead:true},
+  {n:"Rajdeep Nandurkar",r:"QA Lead — payment testing, release gate",w:"ws4"},
+  {n:"Rima Mandal",r:"Project Manager — four streams, dependencies, risk",w:"all"}
+];
+
+const SPRINTS = [
+  { id:"S1", name:"Foundations", weeks:"Weeks 1–2", phase:"Discovery",
+    milestone:"Knowledge transfer done, schemas live, pricing agreed",
+    items:[
+      "Knowledge transfer from the standalone attendance team — highest priority of the sprint",
+      "Attendance data model ported into the persona backend",
+      "ai_responses schema designed and migrated",
+      "Prompt templates lifted out of the frontend into versioned Java templates",
+      "ERP API gap analysis — a definitive, finite list of the remaining 40%",
+      "Pricing workshop with the product owner",
+      "Analytics audit on the live app: what is instrumented, what is not"
+    ],
+    exit:"Attendance schema live in staging, AI schema migrated, the ERP API list is enumerated, pricing agreed." },
+  { id:"S2", name:"Attendance", weeks:"Weeks 3–4", phase:"Core build",
+    milestone:"Attendance live inside the persona app",
+    items:[
+      "Staff management and GPS check-in, API and UI",
+      "Attendance views, monthly summary, CSV export",
+      "First 48 AI combinations generated (3 lifecycles)",
+      "Admin review UI functional",
+      "ERP: first batch of remaining APIs, first screens on real data",
+      "Subscription model design"
+    ],
+    exit:"A business owner marks staff attendance in the persona app. First AI responses reviewed and approved." },
+  { id:"S3", name:"AI complete", weeks:"Weeks 5–6", phase:"Core build",
+    milestone:"All 192 responses generated, reviewed, and served from the database",
+    items:[
+      "All 192 combinations generated",
+      "All 192 reviewed and approved — the week to apply surplus capacity",
+      "Serving API live; mobile switched from frontend prompts to the endpoint",
+      "Offline bundle shipped",
+      "Task management, API and UI",
+      "ERP: second batch of APIs, more screens on real data",
+      "Payment gateway integration begins"
+    ],
+    exit:"Lifestyle AI served with zero runtime model calls. Prompts no longer present in the client." },
+  { id:"S4", name:"Feature complete", weeks:"Weeks 7–8", phase:"Core build",
+    milestone:"Feature freeze",
+    items:[
+      "Leave management with approval workflow, API and UI",
+      "Business owner dashboard consolidated",
+      "ERP analytics fully on real data — mock service removed",
+      "ERP regression suite passed",
+      "Paywall and upgrade flow",
+      "Trial logic and entitlements"
+    ],
+    exit:"Everything in scope is demonstrable end to end. No new features after this point." },
+  { id:"S5", name:"Hardening", weeks:"Weeks 9–10", phase:"Integration",
+    milestone:"Release candidate, and five businesses actually billed",
+    items:[
+      "Bug burn-down to release criteria",
+      "Performance: attendance at 100 staff, analytics at multi-school scale",
+      "Security review — the new payment path especially",
+      "Pilot: five business owners on the paid plan, actually billed",
+      "Store submission",
+      "Support runbook and rollback rehearsal"
+    ],
+    exit:"Release candidate ready. Pilot customers billed successfully — not promised, billed." },
+  { id:"S6", name:"Launch", weeks:"Weeks 11–12", phase:"Launch",
+    milestone:"Paid plan live, first paying business owners",
+    items:[
+      "Staged rollout to the existing 500 users",
+      "Paid plan live",
+      "Sales push to business owners",
+      "Monitoring, support, iteration"
+    ],
+    exit:"Paying business owners. Success criteria measured against the targets below." }
+];
+
+const RISKS = [
+  {id:"R1",t:"No one pays",m:"Three streams improve a product that earns nothing from this segment. Pilot billing in Sprint 5, not Sprint 6 — five committed businesses before launch.",s:"high",top:true},
+  {id:"R2",t:"Pricing undecided",m:"The commercial workstream is blocked until a number exists. Decide in week one.",s:"high",top:true},
+  {id:"R3",t:"Real ERP data breaks assumptions the mocks hid",m:"Mock data is always cleaner. Expect nulls, missing history, inconsistent records. Test against production-shaped data from Sprint 2, not Sprint 4.",s:"high"},
+  {id:"R6",t:"Scope creep from surplus capacity",m:"Seventeen people against four streams of consolidation work. Idle capacity defaults to new features. Direct it to review, feedback and tests.",s:"high"},
+  {id:"R7",t:"Regression in a live product",m:"Three production systems must keep working. Automated regression before any merge, and the ERP suite as a release gate.",s:"med"},
+  {id:"R8",t:"Disruption to the 500 existing users",m:"Staged rollout. The lifestyle change from frontend prompts to served responses must be invisible to them.",s:"med"},
+  {id:"R4",t:"Attendance port underestimated",m:"Knowledge transfer in week one, original developers on call through Sprint 2.",s:"med"},
+  {id:"R5",t:"AI content review never happens",m:"192 responses is roughly two people for one week. Schedule it explicitly in Sprint 3 rather than assuming it fits.",s:"med"},
+  {id:"R9",t:"Payment integration delays",m:"Start in Sprint 3, not Sprint 5. Gateway onboarding and verification take longer than the code.",s:"med"},
+  {id:"R10",t:"Multi-school data leakage in analytics",m:"Every analytics query filters by school. One explicit test, and it is not optional.",s:"low"}
+];
+
+const CHECKS = [
+  {t:"Run the pricing workshop and leave with a number",m:"Product owner and PM. Blocks the entire commercial workstream.",w:"Day 2",c:true},
+  {t:"Identify five business owners willing to pilot a paid plan",m:"Product owner. The validation everything else assumes.",w:"Day 7",c:true},
+  {t:"Attendance app knowledge transfer session",m:"Original developers with the WS1 team. Worth more than two weeks of reading code.",w:"Day 2",c:true},
+  {t:"ERP API gap analysis — produce the enumerated list",m:"Saroj, from the existing mock JSON contracts.",w:"Day 3"},
+  {t:"Confirm pre-generation over runtime inference, and document it",m:"Jothikabu with the product owner. Decides the WS2 architecture.",w:"Day 2",c:true},
+  {t:"Pull Play Store reviews and support tickets for the 500 users",m:"PM. Free product research you are not currently using.",w:"Day 3"},
+  {t:"Analytics audit — what is instrumented on the live app today",m:"Thanusha.",w:"Day 4"},
+  {t:"ai_responses schema design review",m:"Triveni and Jothikabu.",w:"Day 4"},
+  {t:"Payment gateway shortlist",m:"Kaushik.",w:"Day 5"},
+  {t:"Jira configured — four boards, Sprint 1 populated",m:"Rima.",w:"Day 3"},
+  {t:"Sprint 1 planning session",m:"Rima with all four streams.",w:"Day 5"}
+];
+
+const KPIS = [
+  {v:"10+",l:"Paying business owners",n:"The number the quarter is judged on",money:true},
+  {v:"> 20%",l:"Trial to paid conversion",n:"",money:true},
+  {v:"₹10,000+",l:"Monthly recurring revenue",n:"From the persona app",money:true},
+  {v:"2+",l:"Schools on the ERP",n:"Up from one"},
+  {v:"30+",l:"Weekly attendance users",n:"Business owners marking staff"},
+  {v:"> 25%",l:"D30 retention",n:"Business owner segment"},
+  {v:"₹0",l:"Runtime AI cost",n:"Pre-generated, not inferred per request"},
+  {v:"< 200ms",l:"Lifestyle response time",n:"A database lookup, not a model call"},
+  {v:"0",l:"ERP regressions",n:"Non-negotiable — a paying school is live"}
+];
+
+/* ---------- theme ---------- */
+const root=document.documentElement;
+const themeBtn=document.getElementById('theme');
+function setTheme(t){root.setAttribute('data-theme',t);try{localStorage.setItem('dash-theme',t)}catch(e){}paintColors()}
+try{const s=localStorage.getItem('dash-theme');if(s)root.setAttribute('data-theme',s)}catch(e){}
+themeBtn.addEventListener('click',()=>{
+  const cur=root.getAttribute('data-theme');
+  const dark=cur?cur==='dark':window.matchMedia('(prefers-color-scheme:dark)').matches;
+  setTheme(dark?'light':'dark');
+});
+function isDark(){
+  const t=root.getAttribute('data-theme');
+  return t? t==='dark' : window.matchMedia('(prefers-color-scheme:dark)').matches;
+}
+function wsColor(key){const w=WS.find(x=>x.key===key);if(!w)return 'var(--ink-3)';return isDark()?w.dark:w.color}
+function paintColors(){
+  document.querySelectorAll('[data-wskey]').forEach(el=>{
+    el.style.setProperty('--c',wsColor(el.getAttribute('data-wskey')));
+  });
+}
+
+/* ---------- sprints ---------- */
+const ribbon=document.getElementById('ribbon');
+const panel=document.getElementById('sprintpanel');
+let openSprint=null;
+SPRINTS.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='sprint'+(i===0?' now':'');
+  b.setAttribute('aria-expanded','false');
+  b.innerHTML=`<span class="sid">${s.id}</span>
+    <span class="sname">${s.name}</span>
+    <span class="sweeks">${s.weeks}</span>
+    <span class="sphase">${s.phase}</span>`;
+  b.addEventListener('click',()=>openS(i));
+  ribbon.appendChild(b);
+});
+function openS(i){
+  const btns=[...ribbon.children];
+  if(openSprint===i){openSprint=null;panel.innerHTML='';btns.forEach(b=>b.setAttribute('aria-expanded','false'));return}
+  openSprint=i;
+  btns.forEach((b,j)=>b.setAttribute('aria-expanded',j===i?'true':'false'));
+  const s=SPRINTS[i];
+  panel.innerHTML=`<div class="sprintpanel">
+    <h3>${s.id} · ${s.name}</h3>
+    <p class="mile">${s.milestone}</p>
+    <ul class="deliv">${s.items.map(x=>`<li>${x}</li>`).join('')}</ul>
+    <div class="exit"><strong>Exit criteria.</strong> ${s.exit}</div>
+  </div>`;
+}
+openS(0);
+
+/* ---------- workstreams ---------- */
+const wsgrid=document.getElementById('wsgrid');
+WS.forEach(w=>{
+  const n=TEAM.filter(p=>p.w===w.key).length;
+  const b=document.createElement('button');
+  b.className='ws';b.setAttribute('data-wskey',w.key);b.setAttribute('aria-pressed','false');
+  b.innerHTML=`<span class="wid">${w.id}</span><h3>${w.name}</h3><p>${w.desc}</p>
+    <span class="count">${n} people</span>`;
+  b.addEventListener('click',()=>{filterTeam(w.key);document.getElementById('team').scrollIntoView({block:'start'})});
+  wsgrid.appendChild(b);
+});
+
+/* ---------- team ---------- */
+const filters=document.getElementById('filters');
+const teamEl=document.getElementById('team');
+[{key:'all',name:'Everyone'},...WS.map(w=>({key:w.key,name:w.name}))].forEach(f=>{
+  const b=document.createElement('button');
+  b.className='chip';b.textContent=f.name;b.dataset.f=f.key;
+  b.setAttribute('aria-pressed',f.key==='all'?'true':'false');
+  b.addEventListener('click',()=>filterTeam(f.key));
+  filters.appendChild(b);
+});
+TEAM.forEach(p=>{
+  const d=document.createElement('div');
+  d.className='person'+(p.lead?' lead':'');
+  d.dataset.w=p.w;
+  if(p.w!=='all')d.setAttribute('data-wskey',p.w);
+  const wname=p.w==='all'?'All streams':WS.find(w=>w.key===p.w).id;
+  d.innerHTML=`<span class="pn">${p.n}</span><span class="pr">${p.r}</span>
+    <span class="pw">${wname}</span>${p.lead?'<span class="leadtag">lead</span>':''}`;
+  teamEl.appendChild(d);
+});
+function filterTeam(key){
+  [...filters.children].forEach(c=>c.setAttribute('aria-pressed',c.dataset.f===key?'true':'false'));
+  [...wsgrid.children].forEach(c=>c.setAttribute('aria-pressed',c.getAttribute('data-wskey')===key?'true':'false'));
+  [...teamEl.children].forEach(c=>{
+    const show = key==='all' || c.dataset.w===key || c.dataset.w==='all';
+    c.classList.toggle('hide',!show);
+  });
+}
+
+/* ---------- risks ---------- */
+const risksEl=document.getElementById('risks');
+RISKS.forEach(r=>{
+  const d=document.createElement('div');
+  d.className='risk'+(r.top?' top':'');
+  const label={high:'high',med:'medium',low:'low'}[r.s];
+  d.innerHTML=`<span class="rid">${r.id}</span>
+    <div><div class="rt">${r.t}</div><div class="rm">${r.m}</div></div>
+    <span class="sev ${r.s}">${label}</span>`;
+  risksEl.appendChild(d);
+});
+
+/* ---------- checklist ---------- */
+const checksEl=document.getElementById('checks');
+const KEY='dash-week1';
+let done={};
+try{done=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){done={}}
+CHECKS.forEach((c,i)=>{
+  const b=document.createElement('button');
+  b.className='check'+(c.c?' critical':'');
+  b.setAttribute('aria-pressed',done[i]?'true':'false');
+  b.innerHTML=`<span class="box"></span>
+    <span><span class="ct">${c.t}</span><span class="cm">${c.m}</span></span>
+    <span class="cw">${c.w}</span>`;
+  b.addEventListener('click',()=>{
+    done[i]=!done[i];
+    b.setAttribute('aria-pressed',done[i]?'true':'false');
+    save();updateProgress();
+  });
+  checksEl.appendChild(b);
+});
+function save(){try{localStorage.setItem(KEY,JSON.stringify(done))}catch(e){}}
+function updateProgress(){
+  const n=Object.values(done).filter(Boolean).length;
+  document.getElementById('ptext').textContent=`${n} of ${CHECKS.length} done`;
+  document.getElementById('pfill').style.width=(n/CHECKS.length*100)+'%';
+}
+document.getElementById('reset').addEventListener('click',()=>{
+  done={};save();
+  [...checksEl.children].forEach(b=>b.setAttribute('aria-pressed','false'));
+  updateProgress();
+});
+updateProgress();
+
+/* ---------- kpis ---------- */
+const kpisEl=document.getElementById('kpis');
+KPIS.forEach(k=>{
+  const d=document.createElement('div');
+  d.className='kpi'+(k.money?' money':'');
+  d.innerHTML=`<div class="kv">${k.v}</div><div class="kl">${k.l}</div>${k.n?`<div class="kn">${k.n}</div>`:''}`;
+  kpisEl.appendChild(d);
+});
+
+paintColors();
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',paintColors);
+</script>
+</body>
+</html>

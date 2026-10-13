@@ -1,0 +1,10 @@
+{
+  "outcome": "insufficient_evidence",
+  "evidence_chunks": [],
+  "sources": [],
+  "request_id": "request-125",
+  "configuration_revision": "fictional-school-config-1",
+  "degraded_reasons": [
+    "reranker_unavailable"
+  ]
+}

@@ -1,0 +1,288 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RAG Service • Interactive Application Guide</title><style>
+:root{color-scheme:light;--bg:#f3f6fa;--panel:#fff;--text:#172b45;--muted:#52657c;--line:#dbe4ef;--accent:#155e75}body.dark{color-scheme:dark;--bg:#101b2b;--panel:#17263a;--text:#eef4fc;--muted:#b5c4d6;--line:#31445c;--accent:#7dd3fc}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 system-ui,sans-serif}header{padding:30px max(20px,5vw);background:var(--panel);border-bottom:1px solid var(--line)}h1{margin:0;font-size:30px}p{margin:10px 0}.subtitle{color:var(--muted)}.layout{display:grid;grid-template-columns:280px minmax(0,1fr);max-width:1450px;margin:auto}nav{padding:24px}nav a{display:block;padding:8px;color:var(--text);text-decoration:none;font-size:14px}nav a:hover{background:var(--panel)}main{padding:24px;min-width:0}section,.sim{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:18px}summary{padding:18px;font-weight:650;cursor:pointer}.content{padding:0 20px 20px}button,input,select{font:inherit;padding:8px 12px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text)}button{cursor:pointer}button:hover{border-color:var(--accent)}.controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}input{min-width:220px}code{color:var(--accent);overflow-wrap:anywhere}pre{overflow:auto;font-size:13px;line-height:1.6;padding:16px;margin:0}.codebox{border:1px solid var(--line);border-radius:8px;margin:15px 0}.copy{float:right;margin:7px;font-size:12px}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}.sim{padding:20px}.badge{display:inline-block;font-size:13px;padding:4px 10px;border-radius:20px;background:var(--bg);color:var(--accent)}.notice{border-left:4px solid var(--accent);padding:12px 16px;background:var(--bg)}#result{white-space:pre-wrap}#count{color:var(--muted)}[hidden]{display:none!important}@media(max-width:800px){.layout{display:block}nav{display:flex;gap:8px;overflow:auto;padding:12px}nav a{min-width:180px}main{padding:14px}h1{font-size:25px}}@media print{nav,.controls,.copy,.sim{display:none}.layout{display:block}section{break-inside:avoid}body{background:white;color:black}}
+</style></head><body><header><span class="badge">Team training • Source-based implementation guide</span><h1>RAG SLM Service</h1><p class="subtitle">Explore startup, configuration, database readiness, contracts, and remaining implementation work.</p><p class="notice">This guide reflects the supplied document, not a live repository inspection. Only /health and /ready are described as registered. A successful DB check does not prove retrieval, schema completeness, or ACL enforcement.</p><div class="controls"><label>Find a topic <input id="search" type="search" placeholder="Try Alembic, database, scope…"></label><button id="expand">Expand all</button><button id="collapse">Collapse all</button><button id="theme">Dark theme</button><button id="print">Print / Save PDF</button></div><div id="count" aria-live="polite"></div></header><div class="layout"><nav aria-label="Guide sections"><a href="#s1">1. Runtime entry point</a><a href="#s2">2. FastAPI lifecycle and application classes</a><a href="#s3">3. HTTP endpoints</a><a href="#s4">4. Exception handling</a><a href="#s5">5. Configuration</a><a href="#s6">6. Database connection implementation</a><a href="#s7">7. Migration configuration</a><a href="#s8">8. Implemented domain and security classes</a><a href="#s9">9. HTTP schema classes</a><a href="#s10">10. Structured logging</a><a href="#s11">11. Scaffolded but not currently wired runtime areas</a><a href="#s12">12. Verification commands</a></nav><main><div class="sim"><span class="badge">Simulation • no network calls</span><h2>Explore readiness behavior</h2><div class="controls"><label>Application state <select id="state"><option value="connected">Database reachable</option><option value="unavailable">Database unavailable</option><option value="old">Earlier unwired scaffold</option></select></label><label>Example rag table count <input id="tables" type="number" min="0" max="10000" value="4"></label></div><p id="explanation"></p><pre id="result" aria-live="polite"></pre></div><section id="s1" data-title="1. Runtime entry point"><details open><summary>1. Runtime entry point</summary><div class="content"><p>The application entry point is <code>app/main.py</code>.</p>
+<p>The application is created through the factory:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>from app.main import create_app
+
+app = create_app()</pre></div>
+<p>The recommended Uvicorn command is:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>.\.venv\Scripts\python.exe -m uvicorn app.main:create_app --factory --reload --host 127.0.0.1 --port 8000</pre></div>
+<h3><code>create_app()</code></h3>
+<p><code>create_app()</code> is responsible for:</p>
+<p>1. Configuring structured logging.</p>
+<p>2. Loading the validated <code>Settings</code> object.</p>
+<p>3. Creating the FastAPI application.</p>
+<p>4. Registering the application lifespan.</p>
+<p>5. Registering request-ID middleware.</p>
+<p>6. Registering exception handlers.</p>
+<p>7. Defining the <code>/health</code> and <code>/ready</code> operations endpoints.</p>
+<p>8. Accepting an optional database manager for tests.</p>
+<p>The function does not connect to PostgreSQL when the module is imported.</p>
+<p>Database ownership begins during the FastAPI lifespan startup.</p></div></details></section>
+<section id="s2" data-title="2. FastAPI lifecycle and application classes"><details open><summary>2. FastAPI lifecycle and application classes</summary><div class="content"><h3><code>ApplicationResources</code></h3>
+<p>Location: <code>app/main.py</code></p>
+<p><code>ApplicationResources</code> is a dataclass containing the resources owned by one application process.</p>
+<p>Current resource:</p>
+<div class="tablewrap"><table><tr><th>Field</th><th>Type</th><th>Purpose</th></tr><tr><td><code>database</code></td><td><code>DatabaseManager</code></td><td>Runtime SQLAlchemy database manager</td></tr></table></div>
+<p>Its <code>close()</code> method disposes the database engine during application shutdown.</p>
+<h3><code>RequestContextMiddleware</code></h3>
+<p>Location: <code>app/main.py</code></p>
+<p>This middleware:</p>
+<p>1. Reads the incoming <code>X-Request-ID</code> header.</p>
+<p>2. Generates a UUID request ID when the caller did not provide one.</p>
+<p>3. Stores the ID in <code>request.state.request_id</code>.</p>
+<p>4. Binds the ID to the Structlog context.</p>
+<p>5. Adds the same ID to the response header.</p>
+<p>6. Clears the Structlog context after the request.</p>
+<p>The middleware does not log request bodies, authorization keys, database URLs,</p>
+<p>or other secret-bearing values.</p>
+<h3><code>lifespan()</code></h3>
+<p>Location: <code>app/main.py</code></p>
+<p>The lifespan function runs around the entire FastAPI process lifetime.</p>
+<p>Startup:</p>
+<p>1. Reads <code>app.state.settings</code>.</p>
+<p>2. Runs <code>Settings.validate_startup()</code>.</p>
+<p>3. Uses an injected test database manager when supplied.</p>
+<p>4. Otherwise creates a <code>DatabaseManager</code> from database settings.</p>
+<p>5. Stores the active resources in <code>app.state.resources</code>.</p>
+<p>Shutdown:</p>
+<p>1. Calls <code>ApplicationResources.close()</code>.</p>
+<p>2. Disposes the SQLAlchemy engine.</p>
+<p>3. Clears <code>app.state.resources</code>.</p>
+<p>Using <code>TestClient</code> as a context manager is important because it executes this</p>
+<p>lifespan:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>with TestClient(create_app(test_settings, fake_database)) as client:
+    response = client.get(&quot;/ready&quot;)</pre></div></div></details></section>
+<section id="s3" data-title="3. HTTP endpoints"><details open><summary>3. HTTP endpoints</summary><div class="content"><p>The currently registered routes are defined directly in</p>
+<p><code>app/main.py</code>.</p>
+<h3><code>GET /health</code></h3>
+<p>Purpose: process-level liveness check.</p>
+<p>Response:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>{
+  &quot;status&quot;: &quot;ok&quot;
+}</pre></div>
+<p>This endpoint does not access PostgreSQL. It answers whether the FastAPI</p>
+<p>process is responding.</p>
+<h3><code>GET /ready</code></h3>
+<p>Purpose: dependency readiness check.</p>
+<p>The endpoint calls <code>DatabaseManager.health()</code>. When PostgreSQL is reachable,</p>
+<p>it returns:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>{
+  &quot;status&quot;: &quot;ready&quot;,
+  &quot;checks&quot;: {
+    &quot;configuration&quot;: &quot;ok&quot;,
+    &quot;database&quot;: &quot;connected&quot;
+  },
+  &quot;table_count&quot;: 4
+}</pre></div>
+<p>The <code>table_count</code> value is the number of ordinary PostgreSQL base tables in</p>
+<p>the <code>rag</code> schema. PostgreSQL system tables and views are not counted.</p>
+<p>When the database cannot be reached, the response is HTTP <code>503</code>:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>{
+  &quot;status&quot;: &quot;not_ready&quot;,
+  &quot;checks&quot;: {
+    &quot;configuration&quot;: &quot;ok&quot;,
+    &quot;database&quot;: &quot;unavailable&quot;
+  }
+}</pre></div>
+<p>The failure response deliberately does not include the database URL,</p>
+<p>hostname credentials, SQL statement, or exception details.</p>
+<h3>Swagger and OpenAPI</h3>
+<p>FastAPI automatically generates OpenAPI and Swagger documentation from the</p>
+<p><code>FastAPI(...)</code> object in <code>create_app()</code>.</p>
+<p>With the service running on the default port:</p>
+<div class="tablewrap"><table><tr><th>URL</th><th>Purpose</th></tr><tr><td><code>http://127.0.0.1:8000/docs</code></td><td>Swagger UI</td></tr><tr><td><code>http://127.0.0.1:8000/redoc</code></td><td>ReDoc</td></tr><tr><td><code>http://127.0.0.1:8000/openapi.json</code></td><td>Raw OpenAPI JSON</td></tr></table></div>
+<p>The current application metadata is:</p>
+<div class="tablewrap"><table><tr><th>Setting</th><th>Current value</th></tr><tr><td><code>title</code></td><td><code>RAG SLM Retrieval Service</code></td></tr><tr><td><code>version</code></td><td><code>0.1.0</code></td></tr><tr><td><code>lifespan</code></td><td><code>lifespan</code> from <code>app/main.py</code></td></tr></table></div>
+<p>At the current implementation stage, Swagger exposes <code>/health</code> and <code>/ready</code>.</p>
+<p>The scaffolded ingestion and retrieval route files are not currently included</p>
+<p>in <code>create_app()</code>, so they do not appear in Swagger until they are implemented</p>
+<p>and registered.</p></div></details></section>
+<section id="s4" data-title="4. Exception handling"><details open><summary>4. Exception handling</summary><div class="content"><p>The application registers three handlers in <code>app/main.py</code>.</p>
+<h3>Validation errors</h3>
+<p><code>_request_validation_handler()</code> converts request validation failures into a</p>
+<p>safe response with code <code>invalid_request</code> and HTTP <code>422</code>.</p>
+<h3>HTTP errors</h3>
+<p><code>_http_exception_handler()</code> converts <code>HTTPException</code> instances into the</p>
+<p>standard error envelope.</p>
+<h3>Unexpected errors</h3>
+<p><code>_unhandled_exception_handler()</code> returns a generic HTTP <code>500</code> response. It</p>
+<p>does not expose stack traces or internal implementation details to clients.</p>
+<p>The common error response shape is:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>{
+  &quot;code&quot;: &quot;error_code&quot;,
+  &quot;message&quot;: &quot;Safe client-facing message&quot;,
+  &quot;request_id&quot;: &quot;request-correlation-id&quot;
+}</pre></div></div></details></section>
+<section id="s5" data-title="5. Configuration"><details open><summary>5. Configuration</summary><div class="content"><p>The primary configuration model is in</p>
+<p><code>app/core/config.py</code>.</p>
+<h3><code>Settings</code></h3>
+<p><code>Settings</code> is the top-level Pydantic Settings model. It contains:</p>
+<div class="tablewrap"><table><tr><th>Field</th><th>Class</th><th>Purpose</th></tr><tr><td><code>environment</code></td><td><code>str</code></td><td>Environment name</td></tr><tr><td><code>database</code></td><td><code>DatabaseSettings</code></td><td>PostgreSQL connection settings</td></tr><tr><td><code>auth</code></td><td><code>ServiceAuthSettings</code></td><td>Service API-key configuration</td></tr><tr><td><code>retrieval</code></td><td><code>RetrievalSettings</code></td><td>Retrieval limits and capability flag</td></tr><tr><td><code>ingestion</code></td><td><code>IngestionSettings</code></td><td>Ingestion size limits</td></tr><tr><td><code>embedding</code></td><td><code>EmbeddingSettings</code></td><td>Model and vector configuration</td></tr></table></div>
+<p>The accepted environment values are:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>development
+test
+staging
+production</pre></div>
+<p><code>RAG_ENVIRONMENT=local</code> is translated to <code>development</code> for compatibility</p>
+<p>with the existing local <code>.env</code> file.</p>
+<h3><code>get_settings()</code></h3>
+<p><code>get_settings()</code> is an <code>lru_cache</code>-backed factory. It creates <code>Settings</code>,</p>
+<p>validates startup constraints, and returns the cached settings object.</p>
+<p>Caching ensures that the process uses one consistent configuration object</p>
+<p>instead of rereading environment variables for every request.</p>
+<h3><code>DatabaseSettings</code></h3>
+<p>Fields:</p>
+<div class="tablewrap"><table><tr><th>Field</th><th>Default/constraint</th><th>Purpose</th></tr><tr><td><code>url</code></td><td>Required</td><td>SQLAlchemy database URL</td></tr><tr><td><code>pool_size</code></td><td>Default <code>5</code>, range <code>1..50</code></td><td>Connection-pool size</td></tr></table></div>
+<p>The current repository <code>.env</code> uses the legacy variable:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>RAG_DATABASE_URL=postgresql+psycopg://...</pre></div>
+<p>The compatibility validator maps this to <code>database.url</code>.</p>
+<p>The newer nested form is also supported by the Pydantic settings model:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>DATABASE__URL=postgresql+psycopg://...
+DATABASE__POOL_SIZE=5</pre></div>
+<p>Do not commit real credentials to source control. Keep local values in</p>
+<p><code>.env</code>, deployment secret stores, or environment-specific secret injection.</p>
+<h3><code>ServiceAuthSettings</code></h3>
+<p><code>api_key</code> is typed as <code>SecretStr | None</code>. Pydantic prevents accidental</p>
+<p>plaintext display in normal model representations.</p>
+<p>Production startup rejects:</p>
+<p>1. A missing API key.</p>
+<p>2. An empty API key.</p>
+<p>3. The placeholder value <code>change-me</code>.</p>
+<h3><code>RetrievalSettings</code></h3>
+<div class="tablewrap"><table><tr><th>Field</th><th>Purpose</th></tr><tr><td><code>max_top_k</code></td><td>Maximum retrieval result count, default <code>20</code></td></tr><tr><td><code>capability_enabled</code></td><td>Enables the configured retrieval capability</td></tr></table></div>
+<p>Production startup also requires nonzero embedding dimensions when retrieval</p>
+<p>is enabled.</p>
+<h3><code>IngestionSettings</code></h3>
+<p><code>max_bytes</code> limits the accepted ingestion payload size. The default is</p>
+<p>10,000,000 bytes and the allowed range is 1 through 100,000,000 bytes.</p>
+<h3><code>EmbeddingSettings</code></h3>
+<div class="tablewrap"><table><tr><th>Field</th><th>Purpose</th></tr><tr><td><code>model_revision</code></td><td>Embedding model revision</td></tr><tr><td><code>dimensions</code></td><td>Vector dimensions</td></tr><tr><td><code>tokenizer_revision</code></td><td>Tokenizer revision</td></tr><tr><td><code>distance_metric</code></td><td>Vector distance metric, default <code>cosine</code></td></tr></table></div></div></details></section>
+<section id="s6" data-title="6. Database connection implementation"><details open><summary>6. Database connection implementation</summary><div class="content"><p>The application runtime database implementation is</p>
+<p><code>app/db/session.py</code>. This is separate from the</p>
+<p>Alembic migration connection in <code>migrations/env.py</code>.</p>
+<h3><code>DatabaseHealth</code></h3>
+<p><code>DatabaseHealth</code> is an immutable dataclass:</p>
+<div class="tablewrap"><table><tr><th>Field</th><th>Type</th><th>Meaning</th></tr><tr><td><code>connected</code></td><td><code>bool</code></td><td>Whether the health query completed</td></tr><tr><td><code>table_count</code></td><td>`int</td><td>None`</td><td>Number of base tables in <code>rag</code></td></tr></table></div>
+<h3><code>DatabaseManager</code></h3>
+<p><code>DatabaseManager</code> owns the SQLAlchemy engine and provides:</p>
+<h4><code>from_settings()</code></h4>
+<p>Creates a SQLAlchemy engine using:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>create_engine(
+    settings.url,
+    pool_size=settings.pool_size,
+    pool_pre_ping=True,
+)</pre></div>
+<p><code>pool_pre_ping=True</code> helps detect stale pooled connections before use.</p>
+<h4><code>from_engine()</code></h4>
+<p>Accepts an already-created engine. This is primarily used by tests and</p>
+<p>allows readiness behavior to be tested without creating a real database</p>
+<p>connection.</p>
+<h4><code>health()</code></h4>
+<p><code>health()</code> is asynchronous from the caller&#x27;s perspective, but the actual</p>
+<p>synchronous SQLAlchemy operation runs through <code>asyncio.to_thread()</code>.</p>
+<p>This design is intentional for Windows compatibility. The repository uses</p>
+<p><code>psycopg</code>, and async psycopg cannot use Windows&#x27; default</p>
+<p><code>ProactorEventLoop</code>. Running the short database check in a worker thread</p>
+<p>avoids blocking the FastAPI event loop while remaining compatible with</p>
+<p>Uvicorn on Windows.</p>
+<p>The query is equivalent to:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>SELECT count(*)
+FROM information_schema.tables
+WHERE table_schema = &#x27;rag&#x27;
+  AND table_type = &#x27;BASE TABLE&#x27;;</pre></div>
+<h4><code>close()</code></h4>
+<p>Disposes the SQLAlchemy engine through <code>asyncio.to_thread()</code> during FastAPI</p>
+<p>shutdown.</p>
+<h3>Local PostgreSQL container</h3>
+<p>The local PostgreSQL service is defined in</p>
+<p><code>docker-compose.yml</code>:</p>
+<div class="tablewrap"><table><tr><th>Setting</th><th>Value</th></tr><tr><td>Image</td><td><code>pgvector/pgvector:pg16</code></td></tr><tr><td>Container</td><td><code>rag-postgres</code></td></tr><tr><td>Host port</td><td><code>5433</code></td></tr><tr><td>Container port</td><td><code>5432</code></td></tr><tr><td>Database</td><td><code>platform</code></td></tr><tr><td>Persistent volume</td><td><code>pgdata</code></td></tr></table></div>
+<p>Start the existing local database without deleting its volume:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>docker compose up -d postgres
+docker compose ps</pre></div>
+<p>The Compose healthcheck uses <code>pg_isready</code>.</p></div></details></section>
+<section id="s7" data-title="7. Migration configuration"><details open><summary>7. Migration configuration</summary><div class="content"><p>Alembic is configured through <code>migrations/env.py</code>.</p>
+<p>Important behavior:</p>
+<p>1. The migration connection string is sourced from the compatibility settings.</p>
+<p>2. Migrations are scoped to the <code>rag</code> schema.</p>
+<p>3. Alembic&#x27;s version table is <code>rag.alembic_version</code>.</p>
+<p>4. <code>include_schemas=True</code> is enabled.</p>
+<p>5. Type and server-default changes are compared.</p>
+<p>6. Windows uses a selector event-loop policy for Alembic&#x27;s async migration</p>
+<p>   path.</p>
+<p>The current migration metadata is still:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>target_metadata = None</pre></div>
+<p>Therefore, ORM model autogeneration is not yet connected to Alembic. The</p>
+<p>runtime readiness check can count tables, but this does not mean the complete</p>
+<p>requested domain schema has been implemented.</p></div></details></section>
+<section id="s8" data-title="8. Implemented domain and security classes"><details open><summary>8. Implemented domain and security classes</summary><div class="content"><h3>Domain contract classes</h3>
+<p>Location: <code>app/domain/contracts.py</code></p>
+<p>These are immutable dataclasses and an enum used as typed boundaries between</p>
+<p>future ingestion, retrieval, and authorization services.</p>
+<div class="tablewrap"><table><tr><th>Class</th><th>Purpose</th></tr><tr><td><code>AuthorizationScope</code></td><td>Tenant, collection, and permission scope</td></tr><tr><td><code>EmbeddingModelSpec</code></td><td>Embedding model revision, tokenizer, dimensions, and distance metric</td></tr><tr><td><code>ChunkProvenance</code></td><td>Source document/version/checksum/ordinal information</td></tr><tr><td><code>RetrievedChunk</code></td><td>Retrieved text, provenance, and relevance score</td></tr><tr><td><code>RetrievalResult</code></td><td>Tuple of retrieved chunks and an outcome string</td></tr><tr><td><code>IngestionJob</code></td><td>Job ID, tenant, status, and creation timestamp</td></tr><tr><td><code>JobStatus</code></td><td><code>accepted</code>, <code>running</code>, <code>blocked</code>, <code>succeeded</code>, and <code>failed</code> states</td></tr></table></div>
+<h3>Authentication and authorization classes</h3>
+<p>Location: <code>app/security/auth.py</code></p>
+<div class="tablewrap"><table><tr><th>Class</th><th>Purpose</th></tr><tr><td><code>ServiceAuthenticator</code></td><td>Protocol defining service-key authentication</td></tr><tr><td><code>ApiKeyAuthenticator</code></td><td>Uses constant-time comparison for presented API keys</td></tr><tr><td><code>AuthorizationScopeValidator</code></td><td>Rejects a missing authorization scope</td></tr><tr><td><code>TenantScopeValidator</code></td><td>Rejects a scope whose tenant does not match the requested tenant</td></tr></table></div>
+<h3>SQL predicate classes</h3>
+<p>Location: <code>app/security/predicates.py</code></p>
+<div class="tablewrap"><table><tr><th>Class</th><th>Purpose</th></tr><tr><td><code>AuthorizedSearchPredicate</code></td><td>Carries tenant, collection, and permission IDs</td></tr><tr><td><code>AuthorizedSearchPredicateBuilder</code></td><td>Creates the typed predicate input for future repository queries</td></tr></table></div>
+<p>The predicate value object exists, but it is not yet wired into implemented</p>
+<p>SQLAlchemy repository queries. It must not be interpreted as proof that full</p>
+<p>tenant/ACL/lifecycle filtering is complete.</p></div></details></section>
+<section id="s9" data-title="9. HTTP schema classes"><details open><summary>9. HTTP schema classes</summary><div class="content"><p>Location: <code>app/schemas/contracts.py</code></p>
+<p>These Pydantic models define intended HTTP payload shapes:</p>
+<div class="tablewrap"><table><tr><th>Class</th><th>Purpose</th></tr><tr><td><code>RetrieveRequest</code></td><td>Tenant, collection, query text, and bounded <code>top_k</code></td></tr><tr><td><code>SourceReference</code></td><td>Document/version source and score</td></tr><tr><td><code>RetrieveResponse</code></td><td>Retrieval outcome and source references</td></tr><tr><td><code>IngestionRequest</code></td><td>Tenant, collection, source path, and idempotency key</td></tr><tr><td><code>IngestionAcceptedResponse</code></td><td>Accepted ingestion job ID and status</td></tr><tr><td><code>IngestionStatusResponse</code></td><td>Ingestion job status</td></tr><tr><td><code>ErrorResponse</code></td><td>Safe error code, message, and request ID</td></tr><tr><td><code>ReadinessResponse</code></td><td>Status and named readiness checks</td></tr></table></div>
+<p>These contracts are not currently used by registered ingestion or retrieval</p>
+<p>routes because those routes are not registered in <code>create_app()</code>.</p></div></details></section>
+<section id="s10" data-title="10. Structured logging"><details open><summary>10. Structured logging</summary><div class="content"><p>Location: <code>app/observability/logging.py</code></p>
+<p><code>configure_logging()</code> configures Structlog with:</p>
+<p>1. Context-variable merging.</p>
+<p>2. Log levels.</p>
+<p>3. ISO timestamps.</p>
+<p>4. JSON rendering.</p>
+<p>Request IDs are added by <code>RequestContextMiddleware</code> and are therefore</p>
+<p>available to logs generated during a request.</p></div></details></section>
+<section id="s11" data-title="11. Scaffolded but not currently wired runtime areas"><details open><summary>11. Scaffolded but not currently wired runtime areas</summary><div class="content"><p>The repository contains directories for the planned service architecture,</p>
+<p>including:</p>
+<p>- <code>app/api/routes/ingestion.py</code></p>
+<p>- <code>app/api/routes/retrieval.py</code></p>
+<p>- <code>app/db/models/</code></p>
+<p>- <code>app/db/repositories/</code></p>
+<p>- <code>app/db/search/</code></p>
+<p>- <code>app/ingestion/</code></p>
+<p>- <code>app/retrieval/</code></p>
+<p>- <code>app/embeddings/</code></p>
+<p>- <code>app/storage/</code></p>
+<p>- <code>app/operations/</code></p>
+<p>- <code>evaluation/</code></p>
+<p>These locations describe the intended architecture, but they should only be</p>
+<p>called implemented after their functions/classes have executable behavior,</p>
+<p>tests, and registration in the application. At the current state:</p>
+<p>- <code>/health</code> and <code>/ready</code> are the active HTTP routes.</p>
+<p>- Retrieval is not a working evidence-search API.</p>
+<p>- Ingestion is not a durable worker API.</p>
+<p>- ORM metadata is not connected to Alembic autogeneration.</p>
+<p>- The authorization predicate object is not yet enforced by repository SQL.</p></div></details></section>
+<section id="s12" data-title="12. Verification commands"><details open><summary>12. Verification commands</summary><div class="content"><p>Run the following checks from the repository root:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m ruff check app tests
+.\.venv\Scripts\python.exe -m ruff format --check app tests
+.\.venv\Scripts\python.exe -m mypy app tests</pre></div>
+<p>To verify the running API:</p>
+<div class="codebox"><button class="copy">Copy</button><pre>.\.venv\Scripts\python.exe -m uvicorn app.main:create_app --factory --host 127.0.0.1 --port 8000</pre></div>
+<p>Then open:</p>
+<p>- <code>http://127.0.0.1:8000/health</code></p>
+<p>- <code>http://127.0.0.1:8000/ready</code></p>
+<p>- <code>http://127.0.0.1:8000/docs</code></p>
+<p>Do not reset the existing PostgreSQL database or delete the <code>pgdata</code> volume</p>
+<p>when performing local verification.</p></div></details></section></main></div><script>
+const sections=[...document.querySelectorAll('section')], search=document.getElementById('search');
+function filter(){let count=0;const q=search.value.toLowerCase();sections.forEach(s=>{s.hidden=!s.textContent.toLowerCase().includes(q);if(!s.hidden)count++});document.getElementById('count').textContent=count+' of '+sections.length+' sections shown'}search.addEventListener('input',filter);filter();
+document.getElementById('expand').onclick=()=>sections.forEach(s=>s.querySelector('details').open=true);document.getElementById('collapse').onclick=()=>sections.forEach(s=>s.querySelector('details').open=false);
+document.querySelectorAll('nav a').forEach(a=>a.onclick=()=>{search.value='';filter();document.querySelector(a.getAttribute('href')+' details').open=true});
+document.getElementById('theme').onclick=function(){document.body.classList.toggle('dark');this.textContent=document.body.classList.contains('dark')?'Light theme':'Dark theme'};
+document.getElementById('print').onclick=()=>{sections.forEach(s=>{s.hidden=false;s.querySelector('details').open=true});window.print()};
+document.querySelectorAll('.copy').forEach(b=>b.onclick=async()=>{const t=b.parentElement.querySelector('pre').textContent;try{await navigator.clipboard.writeText(t);b.textContent='Copied'}catch{const range=document.createRange();range.selectNodeContents(b.parentElement.querySelector('pre'));const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);b.textContent='Selected: Ctrl+C'}setTimeout(()=>b.textContent='Copy',1800)});
+function simulate(){const v=document.getElementById('state').value;const r={status:v==='connected'?'ready':'not_ready',checks:{configuration:'ok',database:v==='connected'?'connected':v==='old'?'not_initialized':'unavailable'}};if(v==='connected')r.table_count=Math.max(0,Number(document.getElementById('tables').value)||0);document.getElementById('result').textContent='HTTP '+(v==='connected'?'200':'503')+' (simulated)\n'+JSON.stringify(r,null,2);document.getElementById('explanation').textContent=v==='connected'?'DatabaseManager.health() completes. Table count is informational; even zero does not prove or disprove required schema readiness in this implementation.':v==='old'?'The earlier scaffold checked a false database_ready flag without initializing a database resource.':'The current guide describes a safe failure response without credentials or SQL details.'}document.getElementById('state').onchange=simulate;document.getElementById('tables').oninput=simulate;simulate();
+</script></body></html>

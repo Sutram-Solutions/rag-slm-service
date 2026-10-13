@@ -1,0 +1,6 @@
+{
+  "code": "invalid_request",
+  "message": "Request validation failed",
+  "request_id": "request-123",
+  "retryable": false
+}

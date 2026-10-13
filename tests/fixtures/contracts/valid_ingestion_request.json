@@ -1,0 +1,18 @@
+{
+  "tenant_id": "00000000-0000-0000-0000-000000000001",
+  "collection_id": "00000000-0000-0000-0000-000000000010",
+  "document_version_id": "00000000-0000-0000-0000-000000000030",
+  "expected_checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "configuration_revision": "fictional-school-config-1",
+  "idempotency_key": "fictional-training-ingestion-1",
+  "authorization_scope": {
+    "tenant_id": "00000000-0000-0000-0000-000000000001",
+    "principal_id": "fictional-school-admin",
+    "allowed_collection_ids": [
+      "00000000-0000-0000-0000-000000000010"
+    ],
+    "allowed_permission_ids": [
+      "00000000-0000-0000-0000-000000000020"
+    ]
+  }
+}

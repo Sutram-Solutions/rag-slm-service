@@ -1,8 +1,10 @@
 """Validated configuration for the new ingestion/retrieval foundation."""
 
+from collections.abc import Callable
 from functools import lru_cache
+from typing import Any
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -54,10 +56,60 @@ class Settings(BaseSettings):
     embedding: EmbeddingSettings = EmbeddingSettings()
 
     model_config = SettingsConfigDict(
-        env_file=None,
+        env_file=".env",
         env_nested_delimiter="__",
         extra="forbid",
+        populate_by_name=True,
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def adapt_legacy_environment(cls, values: Any) -> Any:
+        if not isinstance(values, dict):
+            return values
+
+        data = dict(values)
+        legacy: dict[str, tuple[str, Callable[[str], object]]] = {
+            "RAG_ENVIRONMENT": (
+                "environment",
+                lambda value: "development" if value == "local" else value,
+            ),
+            "RAG_DATABASE_URL": ("database.url", str),
+            "RAG_DEFAULT_TOP_K": ("retrieval.max_top_k", int),
+            "RAG_RERANK_ENABLED": ("retrieval.capability_enabled", lambda value: value == "true"),
+            "RAG_EMBEDDING_MODEL": ("embedding.model_revision", str),
+            "RAG_EMBEDDING_DIMENSION": ("embedding.dimensions", int),
+        }
+        for key, (path, converter) in legacy.items():
+            source_key = next(
+                (candidate for candidate in data if candidate.upper() == key),
+                None,
+            )
+            if source_key is None:
+                continue
+            value = converter(data.pop(source_key))
+            section, field = path.split(".", maxsplit=1) if "." in path else ("", path)
+            if section:
+                existing = data.get(section)
+                if existing is None:
+                    data[section] = {field: value}
+                elif isinstance(existing, dict):
+                    existing.setdefault(field, value)
+            else:
+                data.setdefault(field, value)
+
+        for key in (
+            "RAG_LOG_LEVEL",
+            "RAG_INBOUND_API_KEYS",
+            "RAG_EMBEDDING_PROVIDER",
+            "RAG_CHUNK_TARGET_TOKENS",
+            "RAG_CHUNK_MAX_TOKENS",
+            "RAG_CANDIDATE_MULTIPLIER",
+        ):
+            for source_key in tuple(data):
+                if source_key.upper() == key:
+                    data.pop(source_key)
+        return data
 
     @field_validator("environment")
     @classmethod

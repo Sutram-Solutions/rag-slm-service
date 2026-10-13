@@ -1,0 +1,13 @@
+{
+  "outcome": "results",
+  "evidence_chunks": [
+    {
+      "chunk_id": "00000000-0000-0000-0000-000000000040",
+      "text": "Fictional school training text."
+    }
+  ],
+  "sources": [],
+  "request_id": "request-123",
+  "configuration_revision": "fictional-school-config-1",
+  "degraded_reasons": []
+}

@@ -1,0 +1,311 @@
+{
+  "guide": "RAG implementation workflow",
+  "exportedAt": "2026-10-13T11:17:38.177Z",
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Agree contracts",
+      "package": "app/domain/contracts.py; app/schemas/contracts.py",
+      "classes": "Document, DocumentVersion, ChunkDraft, ChunkProvenance, AuthorizationScope, EmbeddingModelSpec",
+      "task": "Define typed internal values and bounded API payloads. Extend existing contracts rather than duplicate them.",
+      "deps": [],
+      "owner": "Contracts/security",
+      "done": "Example payloads validate; missing/null scope rejects; explicit empty permissions deny evidence.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 2,
+      "title": "Create database entities",
+      "package": "app/db/models/",
+      "classes": "CollectionRecord, DocumentRecord, DocumentVersionRecord, IndexRevisionRecord, DocumentAclRecord, ChunkRecord, EmbeddingRecord, IngestionJobRecord",
+      "task": "Define tenant-qualified relationships, immutable versions, staging revisions, vector compatibility, job state and constraints.",
+      "deps": [
+        1
+      ],
+      "owner": "Database",
+      "done": "Models have reviewed relationships, unique/check constraints, and timezone-aware fields.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 3,
+      "title": "Connect Alembic",
+      "package": "migrations/env.py; migrations/versions/",
+      "classes": "Base.metadata; forward migration",
+      "task": "Connect target_metadata to ORM models. Preserve existing revision history. Choose compatible vector storage.",
+      "deps": [
+        2
+      ],
+      "owner": "Database",
+      "done": "Upgrade a disposable PostgreSQL/pgvector DB; verify tables, constraints and metadata.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Implement scoped repositories",
+      "package": "app/db/repositories/; app/db/search/; app/security/",
+      "classes": "DocumentRepository, ChunkRepository, IngestionJobRepository, AuthorizedSearchPredicateBuilder",
+      "task": "Short parameterized transactions; tenant/collection/ACL/lifecycle scope required on every lookup/search.",
+      "deps": [
+        3
+      ],
+      "owner": "Database",
+      "done": "Real DB tests prove cross-tenant isolation and denied lookup behavior.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 5,
+      "title": "Validate source files",
+      "package": "app/storage/; app/ingestion/validation.py",
+      "classes": "LocalSourceStorage, DocumentInputValidator, ChecksumVerifier",
+      "task": "Read only approved restricted-root files. Validate actual format, size, dates, metadata, checksum.",
+      "deps": [
+        1
+      ],
+      "owner": "Document processing",
+      "done": "Valid file accepted; traversal, missing/oversized file rejected.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Extract text",
+      "package": "app/ingestion/extractors/",
+      "classes": "TextDocumentExtractor, ExtractedDocument, TextBlock",
+      "task": "UTF-8 extraction retaining source identity, block ordering and locations. Start with one circular.",
+      "deps": [
+        5
+      ],
+      "owner": "Document processing",
+      "done": "English/Hindi/Odia text intact; empty/malformed source handled.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Clean conservatively",
+      "package": "app/ingestion/cleaning/",
+      "classes": "UnicodeNormalizer, whitespace function, CleaningReport",
+      "task": "NFC and limited whitespace cleanup; preserve originals, Indic joiners, numbers, negation and provenance.",
+      "deps": [
+        6
+      ],
+      "owner": "Document processing",
+      "done": "Reviewed fixtures demonstrate no loss of meaning or source mapping.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 8,
+      "title": "Implement chunking",
+      "package": "app/tokenization/; app/ingestion/chunking/",
+      "classes": "TokenCounter, TokenWindowChunker, ChunkDraft, ChunkValidator",
+      "task": "Use selected embedding tokenizer. Bound tokens including headers/special tokens; overlap and oversized sentence/table fallback.",
+      "deps": [
+        7
+      ],
+      "owner": "Document processing",
+      "done": "Every chunk fits full input budget and maps to source; select model/tokenizer before this step.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Implement embeddings",
+      "package": "app/embeddings/",
+      "classes": "EmbeddingProvider, local adapter, VectorValidator, EmbeddingCompatibilityGuard",
+      "task": "Pinned query/document transforms, ordered batches, finite vectors, correct dimensions; bounded inference concurrency.",
+      "deps": [
+        8
+      ],
+      "owner": "Embeddings/retrieval",
+      "done": "Real document and query vectors match full model specification. Fake vectors only in tests.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 10,
+      "title": "Persist staged index",
+      "package": "app/ingestion/pipeline.py; app/db/repositories/",
+      "classes": "IngestionPipeline; bulk persistence methods",
+      "task": "Compose extraction→cleaning→chunking→embedding. Write to staging revision; compute outside DB transactions.",
+      "deps": [
+        4,
+        9
+      ],
+      "owner": "Worker/API",
+      "done": "Partial writes never become searchable; unique writes support safe retry.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 11,
+      "title": "Publish atomically",
+      "package": "app/ingestion/publication.py",
+      "classes": "PublicationService",
+      "task": "Verify completeness/quality/approval/model compatibility; activate expected revision atomically.",
+      "deps": [
+        10
+      ],
+      "owner": "Worker/API",
+      "done": "Failed replacement preserves previous published content; stale concurrent activation rejected.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 12,
+      "title": "Execute durable jobs",
+      "package": "app/ingestion/worker.py; app/ingestion/jobs.py",
+      "classes": "IngestionService, IngestionWorker, JobLeaseManager, idempotency/checkpoint components",
+      "task": "Persist queue; claim lease, heartbeat, checkpoint, retry and finalize with ownership token; separate worker process.",
+      "deps": [
+        4,
+        11
+      ],
+      "owner": "Worker/API",
+      "done": "Restart safe; no duplicate writes; expired worker cannot publish; conflicting idempotency payload rejects.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 13,
+      "title": "Register ingestion APIs",
+      "package": "app/api/routes/ingestion.py; app/core/dependencies.py; app/main.py",
+      "classes": "submit_ingestion(), get_ingestion_status()",
+      "task": "Authenticate service and scoped submissions/status; wire durable pipeline/worker via dependencies.",
+      "deps": [
+        12
+      ],
+      "owner": "Worker/API",
+      "done": "Swagger submission creates job; worker completes publication; status is scoped.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 14,
+      "title": "Build vector baseline",
+      "package": "app/retrieval/; app/db/search/vector.py",
+      "classes": "VectorRetriever, PgVectorSearchRepository, RetrievalService",
+      "task": "Exact authorized vector SQL first. Embed query with pinned collection model; include source references.",
+      "deps": [
+        4,
+        9,
+        11
+      ],
+      "owner": "Embeddings/retrieval",
+      "done": "Correct circular returned; unauthorized chunks absent before candidate selection.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 15,
+      "title": "Register retrieval API",
+      "package": "app/api/routes/retrieval.py; app/main.py",
+      "classes": "retrieve(); response mapping",
+      "task": "Validate trusted scope and bounded input; return evidence/outcomes/request ID, never generated answers.",
+      "deps": [
+        14
+      ],
+      "owner": "Worker/API",
+      "done": "Missing scope rejects; empty scope does not search; returned sources retain provenance.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 16,
+      "title": "Measure baseline",
+      "package": "evaluation/datasets/; evaluation/metrics/; evaluation/runners/",
+      "classes": "GoldenDatasetLoader, metric functions, RetrievalEvaluationRunner",
+      "task": "Begin reviewed questions early; evaluate ≥100 before release. Stable passage/version labels and fixed configuration.",
+      "deps": [
+        15
+      ],
+      "owner": "Evaluation/product",
+      "done": "Recall@5/10/20, MRR and language slices recorded; abstention separate; no fabricated results.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 17,
+      "title": "Improve retrieval",
+      "package": "app/db/search/keyword.py; app/retrieval/",
+      "classes": "KeywordRetriever, HybridRetriever, ReciprocalRankFusion; optional Reranker",
+      "task": "Vector vs lexical vs hybrid; optional bounded reranking after candidate coverage is measured.",
+      "deps": [
+        16
+      ],
+      "owner": "Embeddings/retrieval",
+      "done": "Each variant reports baseline→change→metric→decision plus latency and regressions.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 18,
+      "title": "Integrate Java answers",
+      "package": "Java application: com.sutram.ai",
+      "classes": "RagClient, SchoolFactsService, PromptAssembler, CitationValidator, GroundingValidator",
+      "task": "Java owns permissions, facts, final context/token budget, model call and output validation. Treat evidence as untrusted.",
+      "deps": [
+        15,
+        16
+      ],
+      "owner": "Java integration",
+      "done": "Supported cited answer or explicit no-answer; model outage returns authorized sources.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 19,
+      "title": "Complete product surfaces",
+      "package": "Flutter/React; Java admin/source/feedback APIs",
+      "classes": "Parent UI, admin status/publication, AuthorizedSourceService, FeedbackService",
+      "task": "Source previews reauthorized, admin sees active index version, feedback linked to request/config.",
+      "deps": [
+        13,
+        15,
+        18
+      ],
+      "owner": "Evaluation/product",
+      "done": "School staff and parents complete usable workflows with failure states.",
+      "tracking": {
+        "status": "Not started"
+      }
+    },
+    {
+      "id": 20,
+      "title": "Validate release",
+      "package": "tests/; infra/; docs/runbooks/",
+      "classes": "Load/security/failure checks; dashboards; operational runbooks",
+      "task": "Verify capacity, ACL revocation, reindex rollback, deletion, backups/restore; security/logging accompany all earlier work.",
+      "deps": [
+        19
+      ],
+      "owner": "Founder/release",
+      "done": "Release gates demonstrated. Six passing scaffold tests alone do not prove production readiness.",
+      "tracking": {
+        "status": "Not started"
+      }
+    }
+  ]
+}
