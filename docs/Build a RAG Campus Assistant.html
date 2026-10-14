@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Build a RAG Campus Assistant: Step by Step</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f7fb;--card:#fff;--text:#1d2433;--muted:#5b657a;--line:#e3e7f0;--code:#eef1f8}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1320;--card:#181d2e;--text:#eef1fa;--muted:#a3adc4;--line:#283049;--code:#212842}}
+:root[data-theme="dark"]{--bg:#0f1320;--card:#181d2e;--text:#eef1fa;--muted:#a3adc4;--line:#283049;--code:#212842}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55}
+.wrap{max-width:900px;margin:0 auto;padding:20px 16px 48px}
+header{text-align:center;padding:28px 12px 8px}
+h1{font-size:clamp(1.6rem,5vw,2.4rem);margin:0 0 8px;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent}
+header p{color:var(--muted);margin:0}
+.flow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;margin:18px 0;font-size:.85rem;font-weight:600}
+.flow span.p{padding:6px 12px;border-radius:999px;color:#fff}
+.flow i{color:var(--muted);font-style:normal}
+.phase{margin:34px 0 14px;padding:14px 18px;border-radius:14px;color:#fff;background:var(--c)}
+.phase h2{margin:0;font-size:1.25rem}
+.phase p{margin:2px 0 0;opacity:.92;font-size:.92rem}
+.step{display:flex;gap:14px;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:14px;padding:16px;margin:12px 0}
+.num{flex:none;width:40px;height:40px;border-radius:50%;background:var(--c);color:#fff;font-weight:700;display:grid;place-items:center}
+.body{min-width:0;flex:1}
+.step h3{margin:2px 0 8px;font-size:1.08rem;color:var(--c)}
+.row{margin:5px 0;font-size:.95rem}
+.row b{display:inline-block;min-width:74px;color:var(--c)}
+.tags{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:.78rem;padding:3px 10px;border-radius:999px;border:1px solid var(--c);color:var(--c);font-weight:600}
+.box{background:var(--code);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:.9rem;overflow-x:auto}
+.q{border-left:4px solid var(--c);}
+.tl{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.tl div{flex:1 1 200px;background:var(--code);border-radius:10px;padding:10px;font-size:.88rem}
+.tl div strong{display:block;margin-bottom:3px}
+.ans{background:linear-gradient(135deg,#10b98122,#3b82f622);border:1px solid #10b981;border-radius:10px;padding:12px;margin:8px 0;font-size:.95rem}
+footer{text-align:center;color:var(--muted);font-size:.85rem;margin-top:36px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>Build a RAG Campus Assistant</h1>
+<p>An AI chatbot that answers student questions from your college's own documents</p>
+</header>
+
+<div class="flow">
+<span class="p" style="background:#3b82f6">PDFs</span><i>→</i>
+<span class="p" style="background:#14b8a6">Chunks</span><i>→</i>
+<span class="p" style="background:#8b5cf6">Vectors</span><i>→</i>
+<span class="p" style="background:#6366f1">Vector DB</span><i>⇒</i>
+<span class="p" style="background:#f59e0b">Search</span><i>→</i>
+<span class="p" style="background:#ec4899">Rerank</span><i>→</i>
+<span class="p" style="background:#ef4444">Prompt</span><i>→</i>
+<span class="p" style="background:#10b981">Answer</span>
+</div>
+
+<div class="phase" style="--c:linear-gradient(90deg,#3b82f6,#8b5cf6)">
+<h2>Phase 1: Preparing the Data</h2>
+<p>Done once (and repeated whenever documents change). This builds the AI's knowledge base.</p>
+</div>
+
+<div class="step" style="--c:#3b82f6"><div class="num">1</div><div class="body">
+<h3>Download &amp; Load the Documents</h3>
+<div class="row"><b>What:</b> Gather all 200 college PDFs, tuition schedules, library guides and syllabi into one folder.</div>
+<div class="row"><b>How:</b> Use document loaders to pull the raw text out of every file.</div>
+<div class="tags"><span class="tag">PyPDF</span><span class="tag">LangChain loaders</span></div>
+</div></div>
+
+<div class="step" style="--c:#14b8a6"><div class="num">2</div><div class="body">
+<h3>Chop Files into Bite-Sized Paragraphs (Chunking)</h3>
+<div class="row"><b>Why:</b> An AI can't read a 100-page document just to answer a quick question. It needs small, digestible snippets.</div>
+<div class="row"><b>What:</b> Split documents into ~300-word chunks with ~50 words of overlap so no sentence is cut in half.</div>
+<div class="box">Chunk 1: words 1–300 &nbsp;|&nbsp; Chunk 2: words 250–550 &nbsp;|&nbsp; Chunk 3: words 500–800 …</div>
+<div class="tags"><span class="tag">chunk_size = 300</span><span class="tag">overlap = 50</span></div>
+</div></div>
+
+<div class="step" style="--c:#f59e0b"><div class="num">3</div><div class="body">
+<h3>Attach "ID Cards" (Metadata)</h3>
+<div class="row"><b>Why:</b> So the AI can say "According to Page 12 of the 2026 Student Handbook…"</div>
+<div class="row"><b>What:</b> Label every chunk with details about where it came from.</div>
+<div class="box">source_file: "Student_Handbook_2026.pdf"<br>page_number: 12<br>department: "Housing"</div>
+</div></div>
+
+<div class="step" style="--c:#8b5cf6"><div class="num">4</div><div class="body">
+<h3>Convert Text into Mathematical Codes (Embeddings)</h3>
+<div class="row"><b>Why:</b> Computers don't understand words, they understand distance and math.</div>
+<div class="row"><b>What:</b> Pass each chunk through an embedding model. It outputs a list of numbers (a vector) capturing the meaning. Paragraphs about "tuition fees" and "class payments" land close together in vector space.</div>
+<div class="tags"><span class="tag">sentence-transformers</span><span class="tag">vector = [0.12, -0.48, 0.91, …]</span></div>
+</div></div>
+
+<div class="step" style="--c:#6366f1"><div class="num">5</div><div class="body">
+<h3>Store Everything in a Vector Database</h3>
+<div class="row"><b>What:</b> Save the vectors and their text chunks (plus metadata) in a vector database. Your knowledge base is now ready!</div>
+<div class="tags"><span class="tag">Chroma DB</span><span class="tag">pgvector</span><span class="tag">Pinecone</span></div>
+</div></div>
+
+<div class="phase" style="--c:linear-gradient(90deg,#f59e0b,#ec4899,#10b981)">
+<h2>Phase 2: Handling a Student's Live Question</h2>
+<p>Runs every time a student chats with the assistant (runtime).</p>
+</div>
+
+<div class="step" style="--c:#0ea5e9"><div class="num">6</div><div class="body">
+<h3>The Student Asks a Question</h3>
+<div class="box q">💬 "Can I get my money back if I drop my chemistry class in Week 3?"</div>
+</div></div>
+
+<div class="step" style="--c:#f59e0b"><div class="num">7</div><div class="body">
+<h3>Run a Hybrid Double-Search</h3>
+<div class="row">The question goes to two "judges" in parallel:</div>
+<div class="tl">
+<div style="border-top:4px solid #f59e0b"><strong>🔎 Word Inspector (BM25)</strong>Keyword search. Looks for exact matches like "Week 3", "chemistry", "money".</div>
+<div style="border-top:4px solid #8b5cf6"><strong>🧠 Meaning Detective (Vector)</strong>Finds similar concepts like "tuition refund", "course withdrawal deadline", "reimbursement".</div>
+</div>
+</div></div>
+
+<div class="step" style="--c:#ec4899"><div class="num">8</div><div class="body">
+<h3>Merge &amp; Refine the Results (RRF + Reranker)</h3>
+<div class="row"><b>RRF:</b> Reciprocal Rank Fusion combines the top results of both judges into one top-10 list.</div>
+<div class="row"><b>Reranker:</b> A specialized model re-reads those 10 paragraphs carefully against the question and picks the 3 best.</div>
+<div class="tags"><span class="tag">Top 10</span><span class="tag">→</span><span class="tag">Top 3</span></div>
+</div></div>
+
+<div class="step" style="--c:#ef4444"><div class="num">9</div><div class="body">
+<h3>Create the Cheat-Sheet Prompt (Augmentation)</h3>
+<div class="row">Your code builds a custom message for the LLM (e.g. Llama 3 or GPT):</div>
+<div class="box">You are the official Campus Assistant. Use ONLY these 3 retrieved handbook paragraphs to answer. If the answer isn't there, say "I don't know".<br><br>Context: [Paragraph 1, Page 12: Tuition Refund Schedule…]<br>Student Question: Can I get my money back if I drop my chemistry class in Week 3?</div>
+</div></div>
+
+<div class="step" style="--c:#10b981"><div class="num">10</div><div class="body">
+<h3>Generate the Final Grounded Answer</h3>
+<div class="row">The LLM reads the cheat-sheet and replies with an accurate, sourced response:</div>
+<div class="ans">🤖 "Yes! According to the Student Handbook (Page 12), if you drop a course during Week 3, you are eligible for a 50% tuition refund. After Week 4, no refunds are issued."</div>
+</div></div>
+
+<div class="step" style="--c:#06b6d4"><div class="num">11</div><div class="body">
+<h3>Display in the App Interface</h3>
+<div class="row"><b>What:</b> Plug the Python backend into a frontend chat widget so students can use it on phone or laptop.</div>
+<div class="tags"><span class="tag">Streamlit</span><span class="tag">React</span></div>
+</div></div>
+
+<footer>RAG = Retrieval-Augmented Generation: retrieve the right facts first, then let the AI answer from them.</footer>
+</div>
+</body>
+</html>
